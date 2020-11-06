@@ -193,7 +193,7 @@ print(diabetes.Age.skew(axis = 0, skipna = True))  # Value of skewness only 0.33
 # Kurtosis is a measure of whether the data are heavy-tailed or light-tailed relative to a normal distribution. 
 # That is, data sets with high kurtosis tend to have heavy tails, or outliers. Data sets with low kurtosis tend to have light tails, or lack of outliers. 
 print('\n-----------Kurtosis-------------')
-print(diabetes.kurtosis(skipna = True)) # Value of skewness -0.19 
+print(diabetes.kurtosis(skipna = True)) # Value of skewness -0.19 which indicate that the distribution of age is approximately normally distributed.
 
 #qplot for normality
 stats.probplot(diabetes.Age, plot=plt)
@@ -233,17 +233,57 @@ for x in cat_list:
 #Line 686 # NoDependents 
 
 #Data Transformation
-diabetes['Age']=np.log(diabetes['Age'])
-stats.probplot(diabetes.Age, plot=plt)
+#Typically ype 1 diabetes usually appears during childhood and adolescent
+    
+#Type 1 diabetes signs and symptoms can appear relatively suddenly and may include:
+#Increased thirst
+#Frequent urination
+#Bed-wetting in children who previously didn't wet the bed during the night
+#Extreme hunger
+#Unintended weight loss
+#Irritability and other mood changes
+#Fatigue and weakness
+#Blurred vision
+    
+    
+#Signs and symptoms of type 2 diabetes often develop slowly. In fact, you can have type 2 diabetes for years and not know it. Look for:
+#Increased thirst
+#Frequent urination
+#Increased hunger
+#Unintended weight loss
+#Fatigue
+#Blurred vision
+#Slow-healing sores
+#Frequent infections
+#Areas of darkened skin, usually in the armpits and neck
+    
+#Type1 and Type2 common symptoms:
+#Increased thirst
+#Frequent Urination
+#Increased hunger
+#Unintended weight loss
+#Fatigue
+#Blurred vision
+
+#However, 
+#type1 developed irritation and mood changes and weakness while type 2 show delayed healing
+
+#Due to the diffences in symptoms, we are going to divide Age into 3 groups: below 18,18-45, above 45
+def age_func(age):
+    if age < 18:
+        return 'below_18'
+    elif age>=18 and age<45:
+        return '18_45'
+    else:
+        return 'above_45';
+    
+diabetes['Age']=diabetes['Age'].apply(age_func)
+
+diabetes['Age'].value_counts().plot(kind='pie',autopct='%1.1f%%',legend=True)
 plt.show()
 
-#Final Dataset
-diabetes.info()
-diabetes.head()
+#Categorical to Indicator Variable
+df=pd.get_dummies(diabetes)
 
-
-
-
-
-
-
+#Final Dataset - Ready for Model Training and Evaluation
+df.head()
