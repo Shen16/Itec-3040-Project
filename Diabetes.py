@@ -134,6 +134,10 @@ diabetes['Irritability']=diabetes['Irritability'].map(lambda s:1 if s=='Yes' els
 diabetes['PartialParesis']=diabetes['PartialParesis'].map(lambda s:1 if s=='Yes' else 0)
 diabetes['MuscleStiffness']=diabetes['MuscleStiffness'].map(lambda s:1 if s=='Yes' else 0)
 diabetes['Alopecia']=diabetes['Alopecia'].map(lambda s:1 if s=='Yes' else 0)
+diabetes['Itching']=diabetes['Itching'].map(lambda s:1 if s=='Yes' else 0)
+diabetes['DelayedHealing']=diabetes['DelayedHealing'].map(lambda s:1 if s=='Yes' else 0)
+diabetes['Obesity']=diabetes['Obesity'].map(lambda s:1 if s=='Yes' else 0)
+diabetes['GenitalThrush']=diabetes['GenitalThrush'].map(lambda s:1 if s=='Yes' else 0)
 
 diabetes.head()
 
