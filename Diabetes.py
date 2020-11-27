@@ -20,7 +20,7 @@ import scipy.stats as stats # to calculate chi-square test stat
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 # read data and add the column names
-rawData = pd.read_excel('diabetes.xlsx', names=['Age','Gender', 
+rawData = pd.read_excel('/Users/thuytr/Documents/GitHub/Itec-3040-Project/diabetes.xlsx', names=['Age','Gender', 
                     'Polyuria', 'Polydipsia', 'SuddenWeightLoss', 'Weakness', 'Polyphagia', 'GenitalThrush', 
                     'VisualBlurring', 'Itching', 'Irritability', 'DelayedHealing', 'PartialParesis', 'MuscleStiffness', 
                     'Alopecia', 'Obesity', 'Class'])
@@ -291,3 +291,132 @@ df=pd.get_dummies(diabetes)
 
 #Final Dataset - Ready for Model Training and Evaluation
 df.head()
+
+#Model Training and Evaluation
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score,roc_curve,roc_auc_score,confusion_matrix,plot_confusion_matrix
+from sklearn.tree import DecisionTreeClassifier
+
+y=df.pop('Class')
+X=df
+
+X_train,X_test,y_train,y_test=train_test_split(X,y, test_size=0.2, random_state=0)
+
+
+accuracy={}
+roc_auc={}
+
+def roc_score_result(y_test,y_pred):
+    fpr,tpr,_=roc_curve(y_test,y_pred)
+    plt.plot(fpr,tpr,color='darkorange', label='ROC curve (area = %0.2f)' % roc_auc_score(y_test,y_pred))
+    plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+    plt.title('Receiver operating characteristic')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.show()
+
+#Decision Tree Classifier
+tree=DecisionTreeClassifier(random_state=0)
+tree.fit(X_train,y_train)
+y_tree_pred=tree.predict(X_test)
+
+roc_score_result(y_test, y_tree_pred)
+
+tn, fp, fn, tp=confusion_matrix(y_test,y_tree_pred).ravel()
+print(tn, fp, fn, tp)
+
+plot_confusion_matrix(tree, X_test, y_test,cmap=plt.cm.Blues)
+plt.show()
+
+accuracy['Decision Tree']=accuracy_score(y_test,y_tree_pred)
+print("Accuracy score of Decision Tree: {}".format(accuracy['Decision Tree'])) 
+#The algorithm can correctly identify 97% of non-diabetic,and diabetic patients. 
+#However, it incorrectly identifies 1 patient as diabetic while he/she is not.
+#But for this application,we focus on the cost of false negative. The cost of identifying patient as non-diabetic while he
+#or she is diabetic is very expensive. Patient could have got treatment to address the disease in an early stage.
+#In this case, algorithm incorrectly identifies 2 patients as non-diabetic. The recall rate is tp/(tp+fn)=62/(62+2)=0.969, meaning only 97% of patients are diabetic are correcly identified.
+#In another word, out of 100 diabetic patients, the algorithm will be able to only detect 97 of them, which to us, this is a very expensive cost.
+
+
+#Since the accuracy is quite high,but the cost is still expensive, we will try to improve both accuracy and recall rate by performing cross validation and hyperparameter tuning
+
+from sklearn.model_selection import GridSearchCV
+
+params={'criterion':['gini','entropy'],'splitter':['best','random'],'max_depth':np.arange(5,20)}
+
+tree_cv=GridSearchCV(DecisionTreeClassifier(random_state=0), params, cv=10)
+tree_cv.fit(X_train,y_train)
+
+print("Tuned Decision Tree Parameters: {}".format(tree_cv.best_params_)) 
+print("Best score is {}".format(tree_cv.best_score_))
+
+
+y_treecv_pred=tree_cv.predict(X_test)
+
+roc_score_result(y_test,y_treecv_pred)
+
+tn, fp, fn, tp=confusion_matrix(y_test,y_tree_pred).ravel()
+print(tn, fp, fn, tp)
+
+plot_confusion_matrix(tree_cv, X_test, y_test,cmap=plt.cm.Blues)
+plt.show()
+
+accuracy['Decision Tree CV']=accuracy_score(y_test,y_treecv_pred)
+
+print("Accuracy score of Decision Tree CV: {}".format(accuracy['Decision Tree CV']))
+
+
+#The accuracy has been improved a little bit from 0.97 to 0.98
+
+#Another way to improve the accuracy of the model is ensemble method. We are using RandomForestClassifier for this case
+from sklearn.ensemble import RandomForestClassifier
+
+forest=RandomForestClassifier(random_state=0)
+forest.fit(X_train,y_train)
+y_forest_pred=forest.predict(X_test)
+
+roc_score_result(y_test, y_forest_pred)
+
+tn, fp, fn, tp=confusion_matrix(y_test,y_forest_pred).ravel()
+print(tn, fp, fn, tp)
+
+plot_confusion_matrix(forest, X_test, y_test,cmap=plt.cm.Blues)
+plt.show()
+
+accuracy['Random Forest']=accuracy_score(y_test,y_forest_pred)
+
+print("Accuracy score of Random Forest: {}".format(accuracy['Random Forest']))
+
+
+#Accuracy Table
+accuracy_df=pd.DataFrame.from_dict(accuracy,orient='index', columns=['score'])
+
+print(accuracy_df)
+
+
+#Great improvement! The number of FN has reduced to 1 thus accuracy score is the same with the Decision Tree using Cross Validation. 
+#Thus, in terms of tree-based approach, we will choose Random Forest Classifier 
+#as our prediction model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
