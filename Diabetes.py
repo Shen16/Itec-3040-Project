@@ -401,7 +401,81 @@ print(accuracy_df)
 
 
 
+# K_Nearest Neighbour Classifier
+from sklearn.neighbors import KNeighborsClassifier
 
+df=pd.get_dummies(diabetes)
+
+y=df.pop('Class')
+X=df
+
+
+X_train,X_test,y_train,y_test=train_test_split(X,y, test_size=0.2, random_state=0)
+
+
+knn = KNeighborsClassifier() 
+knn.fit(X_train,y_train)
+
+y_knn_pred=knn.predict(X_test)
+
+roc_score_result(y_test, y_knn_pred)
+
+tn, fp, fn, tp=confusion_matrix(y_test,y_tree_pred).ravel()
+print(tn, fp, fn, tp)
+
+plot_confusion_matrix(tree, X_test, y_test,cmap=plt.cm.Blues)
+plt.show()
+
+accuracy['K-Nearest Neighbours']=accuracy_score(y_test,y_tree_pred)
+print("Accuracy score of K-Nearest Neighbours: {}".format(accuracy['K-Nearest Neighbours'])) 
+
+
+
+
+# 10-Fold Cross validation with GridSerach (to find best parameters for KNN)
+from sklearn.model_selection import GridSearchCV
+
+knn_params={'n_neighbors':np.arange(1,26),'weights':['uniform','distance'],'algorithm':['auto'], 'p': np.arange(1,3), 'metric': ['minkowski']}
+
+knn_cv=GridSearchCV(KNeighborsClassifier(), knn_params, cv=10)
+knn_cv.fit(X_train,y_train)
+
+print("Tuned K-Nearest Neighbour Parameters: {}".format(knn_cv.best_params_)) 
+print("Best score is {}".format(knn_cv.best_score_))
+
+
+y_knncv_pred=knn_cv.predict(X_test)
+
+roc_score_result(y_test,y_knncv_pred)
+
+tn, fp, fn, tp=confusion_matrix(y_test,y_knncv_pred).ravel()
+print(tn, fp, fn, tp)
+
+plot_confusion_matrix(knn_cv, X_test, y_test,cmap=plt.cm.Blues)
+plt.show()
+
+accuracy['K-Nearest Neighbours CV']=accuracy_score(y_test,y_knncv_pred)
+
+print("Accuracy score of K-Nearest Neighbours CV: {}".format(accuracy['K-Nearest Neighbours CV']))
+
+
+#Best params: Tuned K-Nearest Neighbour Parameters: {'algorithm': 'auto', 'n_neighbors': 7, 'p': 2, 'weights': 'distance'}
+
+#The accuracy has been improved alot from 0.971 to 0.99038
+
+
+#The algorithm can correctly identify 99% of non-diabetic,and diabetic patients. 
+#However, it incorrectly identifies 1 patient as non-diabetic while he/she is diabetic. (false negative=1)
+
+#The recall rate is tp/(tp+fn)=63/(63+1)=0.984, meaning only 98.4% of patients are diabetic are correcly identified.
+#In another word, out of 100 diabetic patients, the algorithm will be able to detect 98 of them.
+
+
+
+#Accuracy Table
+accuracy_df=pd.DataFrame.from_dict(accuracy,orient='index', columns=['score'])
+
+print(accuracy_df)
 
 
 
