@@ -20,7 +20,7 @@ import scipy.stats as stats # to calculate chi-square test stat
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 # read data and add the column names
-rawData = pd.read_excel('/Users/thuytr/Documents/GitHub/Itec-3040-Project/diabetes.xlsx', names=['Age','Gender', 
+rawData = pd.read_excel('diabetes.xlsx', names=['Age','Gender', 
                     'Polyuria', 'Polydipsia', 'SuddenWeightLoss', 'Weakness', 'Polyphagia', 'GenitalThrush', 
                     'VisualBlurring', 'Itching', 'Irritability', 'DelayedHealing', 'PartialParesis', 'MuscleStiffness', 
                     'Alopecia', 'Obesity', 'Class'])
@@ -478,12 +478,20 @@ accuracy_df=pd.DataFrame.from_dict(accuracy,orient='index', columns=['score'])
 print(accuracy_df)
 
 
+#Ada Boost usiing the SciKit 
+from sklearn. ensemble import AdaBoostClassifier
 
 
+X_train,X_test,y_train,y_test=train_test_split(X,y, test_size=0.2, random_state=0)
+
+adb = AdaBoostClassifier(base_estimator=None,n_estimators = 10, learning_rate = 1)
+
+adb.fit(X_train,y_train)
 
 
+adb.score(X_test,y_test)
 
-
+adb.score(X_train,y_train)
 
 
 
